@@ -48,61 +48,128 @@ class PostControllerSpec extends Specification {
         response.status == 404
     }
 
+//    def "Adding the valid new post to the timeline"() {
+//        given: "A user with posts in the db"
+//        User chuck = new User(loginId: "chuck_norris", password: "password").save(failOnError: true)
+//
+//        and: "A loginId parameter"
+//        params.id = chuck.loginId
+//
+//        and: "Some content for the post"
+//        params.content = "Chuck Norris can unit test entire applications with a single assert."
+//
+//        when: "addPost is invoked"
+//        def model = controller.addPost()
+//
+//        then: "our flash message and redirect confirms the success"
+//        flash.message == "Successfully created the post"
+//        response.redirectedUrl == "/post/timeline/${chuck.loginId}"
+//        Post.countByUser(chuck) == 1
+//    }
+
+    // test after adding service layer, using Spock mock
     def "Adding the valid new post to the timeline"() {
-        given: "A user with posts in the db"
-        User chuck = new User(loginId: "chuck_norris", password: "password").save(failOnError: true)
+        given: "a mock post service"
+        def mockPostService = Mock(PostService)
+        1 * mockPostService.createPost(_, _) >> new Post(content: "Mock Post")
+        controller.postService = mockPostService
 
-        and: "A loginId parameter"
-        params.id = chuck.loginId
+        when: "controller is invoked"
+        def result = controller.addPost("joe_cool", "Posting up a storm")
 
-        and: "Some content for the post"
-        params.content = "Chuck Norris can unit test entire applications with a single assert."
-
-        when: "addPost is invoked"
-        def model = controller.addPost()
-
-        then: "our flash message and redirect confirms the success"
-        flash.message == "Successfully created the post"
-        response.redirectedUrl == "/post/timeline/${chuck.loginId}"
-        Post.countByUser(chuck) == 1
+        then: "redirected to timeline, flash message tells us all is well"
+        flash.message ==~ /Added new Post: Mock.*/
+        response.redirectedUrl == '/post/timeline/joe_cool'
     }
+
+//    def "Check if the invalid User Id provided is handled with an error"() {
+//        given: "A user with the posts in the db"
+//        User chuck = new User(loginId: "chuck_norris", password: "password").save(failOnError: true)
+//
+//        and: "the invalid User Id"
+//        params.id = "invalid-id"
+//
+//        and: "Some content for the post"
+//        params.content = "Chuck Norris can unit test entire applications with a single assert."
+//
+//        when: "addPost is invoked"
+//        def model = controller.addPost()
+//
+//        then: "redirect with the error flash message"
+//        flash.message == "Invalid User Id"
+//        response.redirectedUrl == "/post/timeline/${chuck.loginId}"
+//        Post.countByUser(chuck) == 0
+//    }
 
     def "Check if the invalid User Id provided is handled with an error"() {
         given: "A user with the posts in the db"
         User chuck = new User(loginId: "chuck_norris", password: "password").save(failOnError: true)
 
-        and: "the invalid User Id"
-        params.id = "invalid-id"
+        and: "A post service that throws an exception with the given data"
+        def errorMsg = "Invalid or Empty Post"
+        def mockPostService = Mock(PostService)
+        controller.postService = mockPostService
+        1 * mockPostService.createPost("invalid-id", "Chuck Norris can unit test") >> {
+            throw new PostException(message: errorMsg)
+        }
 
-        and: "Some content for the post"
-        params.content = "Chuck Norris can unit test entire applications with a single assert."
+//        and: "the invalid User Id"
+//        params.id = "invalid-id"
+//
+//        and: "Some content for the post"
+//        params.content = "Chuck Norris can unit test entire applications with a single assert."
 
         when: "addPost is invoked"
-        def model = controller.addPost()
+        def model = controller.addPost("invalid-id", "Chuck Norris can unit test")
 
-        then: "redirect with the error flash message"
-        flash.message == "Invalid User Id"
+        then: "our flash message and redirect confirms the success"
+        flash.message == errorMsg
         response.redirectedUrl == "/post/timeline/${chuck.loginId}"
         Post.countByUser(chuck) == 0
     }
+
+//    def "Check if the Post with null content is handled with an error"() {
+//        given: "A user with the posts in the db"
+//        User chuck = new User(loginId: "chuck_norris", password: "password").save(failOnError: true)
+//
+//        and: "A loginId parameter"
+//        params.id = chuck.loginId
+//
+//        and: "the content of a post is null"
+//        params.content = ""
+//
+//        when: "addPost is invoked"
+//        def model = controller.addPost()
+//
+//        then: "redirect confirms with the error flash message"
+//        flash.message == "Invalid or empty post"
+//        response.redirectedUrl == "/post/timeline/${chuck.loginId}"
+//        Post.countByUser(chuck) == 0
+//}
 
     def "Check if the Post with null content is handled with an error"() {
         given: "A user with the posts in the db"
         User chuck = new User(loginId: "chuck_norris", password: "password").save(failOnError: true)
 
-        and: "A loginId parameter"
-        params.id = chuck.loginId
+        and: "A post service that throws an exception with the given data"
+        def errorMsg = "Invalid or Empty Post"
+        def mockPostService = Mock(PostService)
+        controller.postService = mockPostService
+        1 * mockPostService.createPost(chuck.id, null) >> { throw new PostException(message: errorMsg) }
 
-        and: "the content of a post is null"
-        params.content = ""
+//        and: "A loginId parameter"
+//        params.id = chuck.id
+//
+//        and: "A content parameter"
+//        params.content = null
 
         when: "addPost is invoked"
-        def model = controller.addPost()
+        def model = controller.addPost(chuck.loginId, null)
 
-        then: "redirect confirms with the error flash message"
-        flash.message == "Invalid or empty post"
+        then: "our flash message and redirect confirms the success"
+        flash.message == errorMsg
         response.redirectedUrl == "/post/timeline/${chuck.loginId}"
-        Post.countByUser(chuck) == 0
+        Post.countByUser(chuck)
     }
 
     @Unroll
