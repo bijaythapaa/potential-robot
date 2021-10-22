@@ -78,4 +78,18 @@ class UserController {
         }
         return [profiles: profiles]
     }
+
+    def register() {
+        if (request.method == "POST") {
+            def user = new User(params)
+            if (user.validate()) {
+                user.save()
+                flash.message = "Successfully Created User"
+                redirect(uri: '/')
+            } else {
+                flash.message = "Error Registering User"
+                return [user: user]
+            }
+        }
+    }
 }
