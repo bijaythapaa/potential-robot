@@ -1,5 +1,29 @@
 package com.bijay
 
+import grails.validation.Validateable
+
+//@Validateable
+class UserRegistrationCommand implements Validateable {
+    String loginId
+    String password
+    String passwordRepeat
+    byte[] photo
+    String fullName
+    String bio
+    String homepage
+    String email
+    String timezone
+    String country
+    String jabberAddress
+
+    static constraints = {
+        importFrom(Profile)
+        importFrom(User)
+        password(size: 6..8, blank: false, validator: { passwd, urc -> return passwd != urc.loginId })
+        passwordRepeat(nullable: false, validator: { passwd2, urc -> return passwd2 == urc.password })
+    }
+}
+
 class UserController {
 
     static scaffold = User
@@ -15,7 +39,6 @@ class UserController {
 
     // return all users whose login IDs match a given string, and
     // optionally were created in the system after a given time
-
 //    def fetchUsers(String loginIdPart, Date fromDate = null) {
 //        def users
 //        if (fromDate) {
