@@ -47,6 +47,13 @@
         <div class="fieldcontain required">
             <label for="profile.email">Email</label>
             <g:textField name="profile.email" value="${user?.profile?.email}"/>
+            <g:hasErrors bean="${user}" field="profile.email">
+                <g:eachError bean="${user}" field="profile.email">
+                    <p style="color: red;">
+                        <g:message error="${it}"/>
+                    </p>
+                </g:eachError>
+            </g:hasErrors>
         </div>
     </fieldset>
     <fieldset class="buttons">
