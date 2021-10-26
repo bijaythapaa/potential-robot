@@ -16,6 +16,11 @@ class UserRegistrationCommand implements Validateable {
     String country
     String jabberAddress
 
+//    def cryptoService
+//    String getEncryptedPassword() {
+//        return cryptoService.getEncryptedPassword(password)
+//    }
+
     static constraints = {
         importFrom(Profile)
         importFrom(User)
@@ -112,6 +117,26 @@ class UserController {
             } else {
                 flash.message = "Error Registering User"
                 return [user: user]
+            }
+        }
+    }
+
+    // binds data from params to command object first
+    def register2(UserRegistrationCommand urc) {
+        // uses hasErrors to check validations
+        if (urc.hasErrors()) {
+            render(view: "register", model: [user: urc])
+        } else {
+            // binds data to new user object
+            def user = new User(urc.properties)
+            user.profile = new Profile(urc.properties)
+            // saves and validate new user
+            if (user.validate() && user.save()) {
+                flash.message = "Welcome abroad, ${urc.fullName ?: urc.loginId}"
+                redirect(uri: "/")
+            } else {
+                // maybe not unique loginId
+                return [user: urc]
             }
         }
     }
