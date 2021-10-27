@@ -42,7 +42,7 @@ class PostController {
 
     def addPost(String id, String content) {
         try {
-            def newPost = postService.createPost(id: id, content: content)
+            def newPost = postService.createPost(id, content)
             flash.message = "Added new Post: ${newPost.content}"
         } catch (PostException pe) {
             flash.message = pe
