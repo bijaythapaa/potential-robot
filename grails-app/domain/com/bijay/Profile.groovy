@@ -12,6 +12,8 @@ class Profile {
     String country
     String jabberAddress
 
+    static belongsTo = [user: User]
+
     static constraints = {
         fullName blank: false
         bio nullable: true, maxSize: 1000

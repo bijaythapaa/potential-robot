@@ -6,6 +6,8 @@ class PostController {
 
     static defaultAction = "home"
 
+    def postService
+
     def home() {
         if (!params.id) {
             params.id == "chuck_norris"
@@ -22,23 +24,30 @@ class PostController {
         }
     }
 
-    def addPost() {
-        def user = User.findByLoginId(params.id)
-        if (user) {
-            def post = new Post(params)
-            user.addToPosts(post)
-//            println(post.content)
-//            println(user.loginId)
-//            def flag = user.save(failOnError: true)
-            if (user.save()) {
-                flash.message = "Successfully created post"
-            } else {
-                flash.message = "Invalid or empty post"
-            }
-        } else {
-            flash.message = "Invalid User Id"
+//    def addPost() {
+//        def user = User.findByLoginId(params.id)
+//        if (user) {
+//            def post = new Post(params)
+//            user.addToPosts(post)
+//            if (user.save()) {
+//                flash.message = "Successfully created post"
+//            } else {
+//                flash.message = "Invalid or empty post"
+//            }
+//        } else {
+//            flash.message = "Invalid User Id"
+//        }
+//        redirect(action: 'timeline', id: params.id)
+//    }
+
+    def addPost(String id, String content) {
+        try {
+            def newPost = postService.createPost(id: id, content: content)
+            flash.message = "Added new Post: ${newPost.content}"
+        } catch (PostException pe) {
+            flash.message = pe
         }
-        redirect(action: 'timeline', id: params.id)
+        redirect(action: 'timeline', id: id)
     }
 
 }
