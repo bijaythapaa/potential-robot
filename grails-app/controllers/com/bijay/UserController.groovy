@@ -140,4 +140,13 @@ class UserController {
             }
         }
     }
+
+    def profile(String id) {
+        def user = User.findByLoginId(id: id)
+        if (user) {
+            return [profile: user.profile]
+        } else {
+            response.sendError(404)
+        }
+    }
 }
