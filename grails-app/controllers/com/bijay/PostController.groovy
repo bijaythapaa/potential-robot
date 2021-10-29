@@ -24,6 +24,17 @@ class PostController {
         }
     }
 
+    def personal() {
+        if (!session.user) {
+            redirect(controller: "login", action: "form")
+            return
+        } else {
+            // Need to reattach the user domain object to the session
+            // using the refresh() method
+            render(view: "timeline", model: [user: session.user.refresh()])
+        }
+    }
+
 //    def addPost() {
 //        def user = User.findByLoginId(params.id)
 //        if (user) {
