@@ -13,7 +13,7 @@ import spock.lang.*
 // Imports controller test artifact
 @TestFor(PostController)
 // Adds mock save() and find() methods to User
-@Mock([User, Post])
+@Mock([User, Post, LameSecurityInterceptor])
 @TestMixin(GrailsUnitTestMixin)
 class PostControllerSpec extends Specification {
 
@@ -79,7 +79,10 @@ class PostControllerSpec extends Specification {
 
         then: "redirected to timeline, flash message tells us all is well"
         flash.message ==~ /Added new Post: Mock.*/
-        response.redirectedUrl == '/post/timeline/joe_cool'
+        response.redirectedUrl == "/users/joe_cool"
+
+        // the test, without the custom url mapping
+        // response.redirectedUrl == '/post/timeline/joe_cool'
     }
 
 //    def "Check if the invalid User Id provided is handled with an error"() {
@@ -188,7 +191,6 @@ class PostControllerSpec extends Specification {
         'joe_cool' | '/post/timeline/joe_cool'
         null       | '/post/timeline/chuck_norris'
     }
-
 
 //    def setup() {
 //    }
